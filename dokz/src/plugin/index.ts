@@ -24,6 +24,8 @@ export function withDokz(nextConfig = {} as any) {
         'mdx',
     ])
 
+    const mdxLocationPrefix = nextConfig.mdxLocationPrefix || "pages";
+
     return withMdx({
         extension: /\.mdx?$/,
         onStart: (_, options) => {
@@ -31,7 +33,7 @@ export function withDokz(nextConfig = {} as any) {
             if (options.isServer) {
                 return
             }
-            writeMdxIndex()
+            writeMdxIndex(mdxLocationPrefix)
             if (process.env.NODE_ENV !== 'production') {
                 const watcher = chokidar.watch(['./**/*.mdx', './**/*.md'], {
                     persistent: true,
@@ -41,7 +43,7 @@ export function withDokz(nextConfig = {} as any) {
                 watcher.on('add', onFileChange)
                 watcher.on('unlink', onFileChange)
             } else {
-                writeMdxIndex()
+                writeMdxIndex(mdxLocationPrefix)
             }
         },
         options: {
@@ -77,17 +79,17 @@ export function withDokz(nextConfig = {} as any) {
     })(nextConfig)
 }
 
-function onFileChange(name) {
+function onFileChange(name, mdxLocationPrefix) {
     const ext = path.extname(name)
     if (!EXTENSIONS_TO_WATCH.includes(ext)) {
         return
     }
-    writeMdxIndex()
+    writeMdxIndex(mdxLocationPrefix)
 }
 
-const writeMdxIndex = throttle(() => {
+const writeMdxIndex = throttle((mdxLocationPrefix) => {
     console.log('[ info ]  generating mdx sidebar file')
-    return getMdxFilesIndex()
+    return getMdxFilesIndex(mdxLocationPrefix)
         .then((index) => {
             return fs.promises.writeFile(
                 'sidebar.json',

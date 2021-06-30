@@ -4,8 +4,8 @@ import getFrontMatter from 'front-matter'
 import fs from 'fs'
 import path from 'path'
 
-export async function getMdxFilesIndex() {
-    const pagesPath = await getPagesPath()
+export async function getMdxFilesIndex(mdxLocationPrefix) {
+    const pagesPath = await getMdxFolderPath(mdxLocationPrefix)
     // console.log({ searchPath })
     const tree = dirTree(
         pagesPath,
@@ -60,14 +60,14 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1)
 }
 
-async function getPagesPath() {
-    var [err, stats] = await to(fs.promises.stat('src/pages'))
+async function getMdxFolderPath(path) {
+    var [err, stats] = await to(fs.promises.stat(`src/${path}`))
     if (!err && stats.isDirectory()) {
-        return 'src/pages'
+        return `src/${path}`
     }
-    var [err, stats] = await to(fs.promises.stat('pages'))
+    var [err, stats] = await to(fs.promises.stat(path))
     if (!err && stats.isDirectory()) {
-        return 'pages'
+        return path
     }
     throw new Error('cannot find pages directory')
 }
